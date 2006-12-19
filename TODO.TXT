@@ -1,0 +1,8 @@
+BeQuiet ToDo
+------------
+
+- check if the user exists before ignoring them
+- check if they are already the list before adding them
+- check if they get unignored ok
+- defer unignore if they don't get unignored
+
