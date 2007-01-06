@@ -48,6 +48,10 @@ L:RegisterTranslations("enUS", function() return {
     ["<attempts>"] = true,
     ["max_add_attempts"] = true,
     ["set number of times to try to add someone who is offline"] = true,
+    ["current BQ queued adds:"] = true,
+    ["%s - %s (in %s) - %d attempts"] = true,
+    ["%s - %s (expired) - %d attempts"] = true,
+    ["giving up trying to add %s (expire time exceeded)"] = true,
 } end)
 
 --

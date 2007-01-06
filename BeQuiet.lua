@@ -110,7 +110,7 @@ BeQuiet.consoleOptions = {
             get = false,
             set = function(name, duration)
                 BeQuiet:Debug("%s - %s", name, seconds)
-                BeQuiet:add(name, duration, false)
+                BeQuiet:add(BeQuiet:initcap(name), duration, false)
             end,
         },
         [L["del"]] = {
@@ -286,9 +286,9 @@ end
 
 function BeQuiet:show()
 
+    local now = time()
+    local duration
     if( BeQuiet.db.profile.size > 0 ) then
-        local now = time()
-        local duration
         self:Print(L["current BQ list:"])
         for name, expire in pairs(BeQuiet.db.profile.list) do
             if( expire ~= nil ) then 
@@ -302,6 +302,17 @@ function BeQuiet:show()
         end
     else
         self:Print(L["no entries on BQ list"])
+    end
+    if( pairs(BeQuiet.db.profile.add_queue) ) then
+        self:Print(L["current BQ queued adds:"])
+        for name, v in pairs(BeQuiet.db.profile.add_queue) do
+            duration = v.untiltime - now
+            if( duration > 0 ) then
+                self:Print(L["%s - %s (in %s) - %d attempts"], name, date(L["dateformat"], v.untiltime), A:FormatDurationFull(duration), v.attempts)
+            else
+                self:Print(L["%s - %s (expired) - %d attempts"], name, date(L["dateformat"], v.untiltime), v.attempts)
+            end
+        end
     end
 
 end
@@ -336,6 +347,9 @@ function BeQuiet:BeQuiet_Check()
         v.attempts = v.attempts + 1
         if( v.attempts > BeQuiet.db.profile.max_add_attempts ) then
             self:Print(L["giving up trying to add %s (max attempts exceeded)"], name)
+            BeQuiet.db.profile.add_queue[name] = nil
+        elseif( v.untiltime < now ) then
+            self:Print(L["giving up trying to add %s (expire time exceeded)"], name)
             BeQuiet.db.profile.add_queue[name] = nil
         else
             self:Print(L["attempting to ignore %s (queued from previous failure)"], name)
@@ -377,7 +391,7 @@ end
 function BeQuiet:is_ignored(name)
 
     for i = 1, GetNumIgnores() do
-        if( string.upper(name) == string.upper(GetIgnoreName(i)) ) then
+        if( name == GetIgnoreName(i) ) then
             return true
         end
     end
@@ -405,6 +419,12 @@ function BeQuiet:duration_to_seconds(duration)
     end
     
     return seconds
+
+end
+
+function BeQuiet:initcap(name)
+
+    return strupper(strsub(name,1,1)) .. strlower(strsub(name,2))
 
 end
 
