@@ -17,16 +17,13 @@ BeQuiet = AceLibrary("AceAddon-2.0"):new(
 
 -- setup profile
 BeQuiet.defaults = {
-    sv_ver           = 10002,
-    announce         = true,
+    sv_ver           = 10005,
     ignoretime       = "6h",           
-    checktime        = 600,            -- 60*10    (10 minutes)
-    list             = {},
-    size             = 0,
-    debug            = false,
-    add_del_wait     = 5,
-    add_queue        = {},
+    checktime        = "30m",
+    add_del_wait     = "5s",
     max_add_attempts = 5,
+    list             = {},
+    add_queue        = {},
 }
 BeQuiet:RegisterDB("BeQuietDB", "BeQuietDBPC")
 BeQuiet:RegisterDefaults("profile", BeQuiet.defaults)
@@ -36,15 +33,6 @@ BeQuiet.consoleOptions = {
     type = "group",
     handler = BeQuiet,
     args = {
-        [L["announce"]] = {
-            type = "toggle",
-            name = L["announce"],
-            desc = L["announce periodic purges in the chat frame"],
-            get = function() return BeQuiet.db.profile.announce end,
-            set = function(v)
-                BeQuiet.db.profile.announce = not BeQuiet.db.profile.announce
-            end,
-        },
         [L["ignoretime"]] = {
             type = "text",
             name = L["ignoretime"],
@@ -56,6 +44,9 @@ BeQuiet.consoleOptions = {
             set = function(duration)
                 BeQuiet.db.profile.ignoretime = duration
             end,
+            validate = function(v)
+                return BeQuiet:duration_to_seconds(v) > 0
+            end,
         },
         [L["add_del_wait"]] = {
             type = "text",
@@ -66,7 +57,10 @@ BeQuiet.consoleOptions = {
                 return BeQuiet.db.profile.add_del_wait
             end,
             set = function(duration)
-                BeQuiet.db.profile.add_del_wait = BeQuiet:duration_to_seconds(duration)
+                BeQuiet.db.profile.add_del_wait = duration
+            end,
+            validate = function(v)
+                return BeQuiet:duration_to_seconds(v) > 0
             end,
         },
         [L["max_add_attempts"]] = {
@@ -77,11 +71,11 @@ BeQuiet.consoleOptions = {
             get = function()
                 return BeQuiet.db.profile.max_add_attempts
             end,
-            set = function(seconds)
-                BeQuiet.db.profile.max_add_attempts = tonumber(seconds)
+            set = function(v)
+                BeQuiet.db.profile.max_add_attempts = tonumber(v)
             end,
-            validate = function(seconds)
-                return string.find(seconds, "^%d+$") and tonumber(seconds) > 0
+            validate = function(v)
+                return string.find(v, "^%d+$") and tonumber(v) > 0
             end,
         },
         [L["checktime"]] = {
@@ -93,12 +87,16 @@ BeQuiet.consoleOptions = {
                 return BeQuiet.db.profile.checktime
             end,
             set = function(duration)
-                BeQuiet.db.profile.checktime = BeQuiet:duration_to_seconds(duration)
+                BeQuiet.db.profile.checktime = duration
+                local seconds = BeQuiet:duration_to_seconds(BeQuiet.db.profile.checktime)
                 if( BeQuiet.event_id and BeQuiet:IsEventScheduled(BeQuiet.event_id) ) then
                     BeQuiet:CancelScheduledEvent(BeQuiet.event_id)
-                    BeQuiet:Debug("scheduling every %d seconds", BeQuiet.db.profile.checktime)
-                    BeQuiet.event_id = BeQuiet:ScheduleRepeatingEvent("BeQuiet_Check", BeQuiet.db.profile.checktime) 
+                    BeQuiet:Debug("scheduling every %d seconds", seconds)
+                    BeQuiet.event_id = BeQuiet:ScheduleRepeatingEvent("BeQuiet_Check", seconds) 
                 end
+            end,
+            validate = function(v)
+                return BeQuiet:duration_to_seconds(v) > 0
             end,
         },
         [L["add"]] = {
@@ -109,7 +107,7 @@ BeQuiet.consoleOptions = {
             input = true,
             get = false,
             set = function(name, duration)
-                BeQuiet:Debug("%s - %s", name, seconds)
+                BeQuiet:Debug("%s - %s", name, duration)
                 BeQuiet:add(BeQuiet:initcap(name), duration, false)
             end,
         },
@@ -129,17 +127,25 @@ BeQuiet.consoleOptions = {
             desc = L["show BQ list"],
             func = "show",
         },
+        [L["list"]] = {
+            type = "execute",
+            name = L["list"],
+            desc = L["show BQ list"],
+            func = "show",
+        },
         [L["clear"]] = {
             type = "execute",
             name = L["clear"],
             desc = L["clear BQ list"],
             func = "clear",
         },
-        ["dump"] = {
+        [L["scan"]] = {
             type = "execute",
-            name = "dump",
-            desc = "dump profile",
-            func = "dump",
+            name = L["scan"],
+            desc = L["scan BQ list for queued adds or expired entries"],
+            func = function()
+                BeQuiet:TriggerEvent("BeQuiet_Check")
+            end,
         },
     },
 }
@@ -158,11 +164,33 @@ function BeQuiet:OnInitialize()
 
     -- SV 10001 -> 10002: convert ignoretime to units suffix
     if( BeQuiet.db.profile.sv_ver == 10001 ) then
-        local ignoretime = string.format("%ds", BeQuiet.db.profile.ignoretime);
+        local ignoretime = BeQuiet.db.profile.ignoretime .. "s"
         BeQuiet.db.profile.ignoretime = ignoretime
         BeQuiet.db.profile.sv_ver = 10002
     end
+    
+    -- SV 10002 -> 10003: remove size and debug
+    if( BeQuiet.db.profile.sv_ver == 10002 ) then
+        BeQuiet.db.profile.size = nil
+        BeQuiet.db.profile.debug = nil
+        BeQuiet.db.profile.sv_ver = 10003
+    end
 
+    -- SV 10003 -> 10004: convert add_del_wait to units suffix
+    if( BeQuiet.db.profile.sv_ver == 10003 ) then
+        local add_del_wait = BeQuiet.db.profile.add_del_wait .. "s"
+        BeQuiet.db.profile.ignoretime = add_del_wait
+        BeQuiet.db.profile.sv_ver = 10004
+    end
+
+    -- SV 10004 -> 10005: convert checktime to units suffix
+    if( BeQuiet.db.profile.sv_ver == 10004 ) then
+        local checktime = BeQuiet.db.profile.checktime .. "s"
+        BeQuiet.db.profile.checktime = checktime
+        BeQuiet.db.profile.sv_ver = 10005
+    end
+
+    
 end
 
 function BeQuiet:OnEnable()
@@ -174,10 +202,6 @@ function BeQuiet:OnEnable()
     self:RegisterEvent("BeQuiet_Check_Add")
     self:RegisterEvent("BeQuiet_Check_Del")
     
-    if( BeQuiet.db.profile.debug ) then
-        self:SetDebugging(true)
-    end
-
 	if( AceLibrary("AceEvent-2.0"):IsFullyInitialized() ) then
 		self:AceEvent_FullyInitialized()
 	else
@@ -192,17 +216,17 @@ function BeQuiet:OnDisable()
     self.event_id = nil
     self:UnregisterAllEvents()
     
-    if( self:IsDebugging() ) then
-        BeQuiet.db.profile.debug = true
-    end
-
 end
 
 function BeQuiet:AceEvent_FullyInitialized()
 
     self:Debug("scheduling every %d seconds", BeQuiet.db.profile.checktime)
     self:TriggerEvent("BeQuiet_Check")
-    self.event_id = self:ScheduleRepeatingEvent("BeQuiet_Check", BeQuiet.db.profile.checktime)
+    local seconds = BeQuiet:duration_to_seconds(BeQuiet.db.profile.checktime)
+    if( seconds < 1 ) then
+        self:Print(L["invalid checktime '%s' - regular scans are disabled"], BeQuiet.db.profile.checktime)
+    end
+    self.event_id = self:ScheduleRepeatingEvent("BeQuiet_Check", seconds)
 
 end
 
@@ -211,6 +235,10 @@ function BeQuiet:add(name, duration, from_queue)
         duration = BeQuiet.db.profile.ignoretime
     end
     local seconds = self:duration_to_seconds(duration)
+    if( seconds < 1 ) then
+        self:Print(L["invalid duration '%s'"], duration)
+        return
+    end
     local untiltime = time() + seconds
     if( BeQuiet.db.profile.list[name] ) then
         if( untiltime > BeQuiet.db.profile.list[name] ) then
@@ -219,7 +247,7 @@ function BeQuiet:add(name, duration, from_queue)
             if( self:is_ignored(name) ) then
                 self:Debug("ignored immediately")
             end
-            self:ScheduleEvent("BeQuiet_Check_Add", BeQuiet.db.profile.add_del_wait, name, untiltime, false, from_queue)
+            self:ScheduleEvent("BeQuiet_Check_Add", BeQuiet:duration_to_seconds(BeQuiet.db.profile.add_del_wait), name, untiltime, false, from_queue)
         else
             self:Print(L["%s is already on the BQ list until %s (in %s)"], date(L["dateformat"], BeQuiet.db.profile.list[name]), A:FormatDurationFull(seconds))
         end
@@ -229,7 +257,7 @@ function BeQuiet:add(name, duration, from_queue)
         if( self:is_ignored(name) ) then
             self:Debug("ignored immediately")
         end
-        self:ScheduleEvent("BeQuiet_Check_Add", BeQuiet.db.profile.add_del_wait, name, untiltime, true, from_queue)
+        self:ScheduleEvent("BeQuiet_Check_Add", BeQuiet:duration_to_seconds(BeQuiet.db.profile.add_del_wait), name, untiltime, true, from_queue)
     end
 end
 
@@ -243,7 +271,6 @@ function BeQuiet:BeQuiet_Check_Add(name, untiltime, new, from_queue)
         end
         BeQuiet.db.profile.list[name] = untiltime
         if( new ) then
-            BeQuiet.db.profile.size = BeQuiet.db.profile.size + 1
             self:Print(L["added %s until %s (in %s)"], name, date(L["dateformat"], BeQuiet.db.profile.list[name]), A:FormatDurationFull(seconds))
         else
             self:Print(L["%s was already on the BQ list; extended until %s (in %s)"], name, date(L["dateformat"], BeQuiet.db.profile.list[name]), A:FormatDurationFull(seconds))
@@ -265,7 +292,10 @@ function BeQuiet:del(name)
     if( BeQuiet.db.profile.list[name] ) then
         self:Print(L["attempting to unignore %s"], name)
         DelIgnore(name)
-        self:ScheduleEvent("BeQuiet_Check_Del", BeQuiet.db.profile.add_del_wait, name)
+        self:ScheduleEvent("BeQuiet_Check_Del", BeQuiet:duration_to_seconds(BeQuiet.db.profile.add_del_wait), name)
+    elseif( BeQuiet.db.profile.add_queue[name] ) then
+        self:Print(L["removing %s from add queue"], name)
+        BeQuiet.db.profile.add_queue[name] = nil
     else
         self:Print(L["%s is not on the BQ list"])
     end
@@ -278,7 +308,6 @@ function BeQuiet:BeQuiet_Check_Del(name)
         self:Print(L["could not remove %s from BQ list - will try again later"], name)
     else
         BeQuiet.db.profile.list[name] = nil
-        BeQuiet.db.profile.size = BeQuiet.db.profile.size - 1
         self:Print(L["removed %s"], name)
     end
 
@@ -288,15 +317,15 @@ function BeQuiet:show()
 
     local now = time()
     local duration
-    if( BeQuiet.db.profile.size > 0 ) then
+    if( pairs(BeQuiet.db.profile.list) ) then
         self:Print(L["current BQ list:"])
         for name, expire in pairs(BeQuiet.db.profile.list) do
             if( expire ~= nil ) then 
                 duration = expire - now
                 if( duration > 0 ) then
-                    self:Print(L["%s - %s (in %s)"], name, date(L["dateformat"], expire), A:FormatDurationFull(duration))
+                    self:Print(L["   %s - %s (in %s)"], name, date(L["dateformat"], expire), A:FormatDurationFull(duration))
                 else
-                    self:Print(L["%s - %s (expired)"], name, date(L["dateformat"], expire))
+                    self:Print(L["   %s - %s (expired)"], name, date(L["dateformat"], expire))
                 end
             end
         end
@@ -308,9 +337,9 @@ function BeQuiet:show()
         for name, v in pairs(BeQuiet.db.profile.add_queue) do
             duration = v.untiltime - now
             if( duration > 0 ) then
-                self:Print(L["%s - %s (in %s) - %d attempts"], name, date(L["dateformat"], v.untiltime), A:FormatDurationFull(duration), v.attempts)
+                self:Print(L["   %s - %s (in %s) - %d attempts"], name, date(L["dateformat"], v.untiltime), A:FormatDurationFull(duration), v.attempts)
             else
-                self:Print(L["%s - %s (expired) - %d attempts"], name, date(L["dateformat"], v.untiltime), v.attempts)
+                self:Print(L["   %s - %s (expired) - %d attempts"], name, date(L["dateformat"], v.untiltime), v.attempts)
             end
         end
     end
@@ -335,9 +364,7 @@ function BeQuiet:BeQuiet_Check()
     local now = time()
     for name, expire in pairs(BeQuiet.db.profile.list) do
         if( now > expire ) then
-            if( BeQuiet.db.profile.announce ) then
-                self:Print(L["BQ entry for %s has expired"], name)
-            end
+            self:Print(L["BQ entry for %s has expired"], name)
             self:del(name)
         end
     end
@@ -355,35 +382,6 @@ function BeQuiet:BeQuiet_Check()
             self:Print(L["attempting to ignore %s (queued from previous failure)"], name)
             self:add(name, v.untiltime, true)
         end
-    end
-
-end
-
-function BeQuiet:dump()
-
-    self:Debug("sv_ver = " .. BeQuiet.db.profile.sv_ver)
-    self:Debug("ignoretime = " .. BeQuiet.db.profile.ignoretime)
-    self:Debug("checktime = " .. BeQuiet.db.profile.checktime)
-    self:Debug("add_del_wait = " .. BeQuiet.db.profile.add_del_wait)
-    self:Debug("max_add_attempts = " .. BeQuiet.db.profile.max_add_attempts)
-    self:Debug("size = " .. BeQuiet.db.profile.size)
-    if( BeQuiet.db.profile.announce ) then
-        self:Debug("announce = true")
-    else
-        self:Debug("announce = false")
-    end
-    if( BeQuiet.db.profile.debug ) then
-        self:Debug("debug = true")
-    else
-        self:Debug("debug = false")
-    end
-    self:Debug("list:")
-    for name, expire in pairs(BeQuiet.db.profile.list) do
-        self:Debug("%s - %d", name, expire)
-    end
-    self:Debug("queued adds:")
-    for name, v in pairs(BeQuiet.db.profile.add_queue) do
-        self:Debug("%s - %d (%d attempts)", name, v.untiltime, v.attempts)
     end
 
 end

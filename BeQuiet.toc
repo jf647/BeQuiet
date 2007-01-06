@@ -1,7 +1,7 @@
 ## Interface: 20000
 ## Title: BeQuiet |cff7fff7f -Ace2-|r
 ## Notes: Puts people on your ignore list temporarily
-## Version: 1.1.$Revision: 4166 $
+## Version: 1.2.$Revision: 4166 $
 ## Author: Kynan (Eitrigg US)
 ## DefaultState: Enabled
 ## OptionalDeps: Ace2, CrayonLib
