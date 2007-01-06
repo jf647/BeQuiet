@@ -1,9 +1,0 @@
-BeQuiet ToDo
-------------
-
-- check if the user exists before ignoring them
-- check if they are already ignored before trying to ignore them again
-- check if they are ignored before trying to unignore them
-- check if they get unignored ok and defer if it doesn't work
-- support adding using time spec strings (1d5h3m)
-
