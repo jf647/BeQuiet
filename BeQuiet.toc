@@ -4,7 +4,7 @@
 ## Version: 1.3.$Revision$
 ## Author: Kynan (Eitrigg US)
 ## DefaultState: Enabled
-## OptionalDeps: Ace2, CrayonLib
+## OptionalDeps: Ace2
 ## SavedVariables: BeQuietDB
 ## X-Category: Chat/Communication Addons
 ## X-Date: $Date$
