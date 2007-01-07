@@ -1,5 +1,5 @@
 --
--- $Id: ClubDead-enUS.lua 4162 2006-11-16 19:05:44Z james $
+-- $Id$
 --
 
 local L = AceLibrary("AceLocale-2.2"):new("BeQuiet")

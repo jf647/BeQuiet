@@ -1,13 +1,13 @@
 ## Interface: 20000
 ## Title: BeQuiet |cff7fff7f -Ace2-|r
 ## Notes: Puts people on your ignore list temporarily
-## Version: 1.3.$Revision: 4166 $
+## Version: 1.3.$Revision$
 ## Author: Kynan (Eitrigg US)
 ## DefaultState: Enabled
 ## OptionalDeps: Ace2, CrayonLib
 ## SavedVariables: BeQuietDB
 ## X-Category: Chat/Communication Addons
-## X-Date: $Date: 2006-11-20 08:04:13 -0500 (Mon, 20 Nov 2006) $
+## X-Date: $Date$
 
 libs\AceLibrary\AceLibrary.lua
 libs\AceOO-2.0\AceOO-2.0.lua
