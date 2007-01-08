@@ -4,7 +4,7 @@
 
 local L = AceLibrary("AceLocale-2.2"):new("BeQuiet")
 L:RegisterTranslations("enUS", function() return {
-    ["AceConsole-Commands"] = {"/bequiet", "/bq", "/stfu"},
+    ["AceConsole-Commands"] = {"/bequiet", "/bq" },
     ["dateformat"] = "%m/%d/%y %H:%M:%S",
     ["BeQuiet"] = true,
     ["ignoretime"] = true,
@@ -76,7 +76,7 @@ L:RegisterTranslations("enUS", function() return {
     ["Add Target"] = true,
     ["Ignore Time"] = true,
     ["Add current target to BQ list with default time"] = true,
-    ["Addon Configuration Parameters"] = true,
+    ["Configuration Parameters"] = true,
     ["scanning BQ list"] = true,
     ["Delete from BQ List"] = true,
     ["Delete Ignored Names"] = true,
