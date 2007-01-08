@@ -1,0 +1,11 @@
+--
+-- $Id$
+--
+
+PlayerMenu Integration
+----------------------
+
+From WowInterface comments:
+
+I'd like to add this addon as an option to the addon PlayerMenu. That way I can right-click on a name in chat and choose BeQuiet instead of the standard ignore. Would you know the syntax for having one script call another so I could hack PlayerMenu to call BeQuiet with the two necessary parameters of 'add' and name? Is this even possible? Thanks!
+

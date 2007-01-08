@@ -8,6 +8,11 @@ BeQuiet
 BeQuiet is an addon for World of Warcraft that adds people to your ignore
 list temporarily.
 
+This is helpful for adding someone who is annoying right this minute without
+having to worry about them staying on your ignore list forever taking up a
+spot, or (if the person is someone you know) you making the mistake of
+whispering them while they are still on the /ignore list.
+
 Overview
 --------
 

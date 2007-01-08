@@ -1,0 +1,8 @@
+--
+-- $Id$
+--
+
+1.4 - Jan 8th 2007
+
+- initial public release after internal testing
+
