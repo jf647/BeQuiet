@@ -86,6 +86,13 @@ L:RegisterTranslations("enUS", function() return {
     ["List"] = true,
     ["Queue"] = true,
     ["Delete"] = true,
+    ["UNITPOPUP_BEQUIET"] = "Be Quiet!",
+    ["making yourself BeQuiet is outside the scope of this addon"] = true,
+    ["upgrading profile SV from v%d to v%d"] = true,
+    ["Add to Pop-up menu"] = true,
+    ["Add BeQuiet to right-click pop-up menu"] = true,
+    ["adding BeQuiet to right-click popup menu"] = true,
+    ["removing BeQuiet from right-click popup menu"] = true,
 } end)
 
 --

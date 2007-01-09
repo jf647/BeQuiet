@@ -118,6 +118,23 @@ BeQuiet.fubarOptions = {
                         return BeQuiet:duration_to_seconds(v) > 0
                     end,
                 },
+                add_popup_menu = {
+                    order = 500,
+                    type = "toggle",
+                    name = L["Add to Pop-up menu"],
+                    desc = L["Add BeQuiet to right-click pop-up menu"],
+                    get = function() return BeQuiet.db.profile.add_popup_menu end,
+                    set = function()
+                        if( BeQuiet.db.profile.add_popup_menu ) then
+                            BeQuiet:Print(L["removing BeQuiet from right-click popup menu"])
+                            BeQuiet:Remove_Popup_Hook()
+                        else
+                            BeQuiet:Print(L["adding BeQuiet to right-click popup menu"])
+                            BeQuiet:Add_Popup_Hook()
+                        end
+                        BeQuiet.db.profile.add_popup_menu = not BeQuiet.db.profile.add_popup_menu
+                    end,
+                },
             },
         },
         spacer2 = {

@@ -12,6 +12,7 @@ BeQuiet = AceLibrary("AceAddon-2.0"):new(
     "AceDebug-2.0",
     "AceConsole-2.0",
     "AceDB-2.0",
+    "AceHook-2.1",
     "FuBarPlugin-2.0"
 )
 
@@ -23,6 +24,7 @@ BeQuiet.defaults = {
         checktime        = "30m",
         add_del_wait     = "3s",
         max_add_attempts = 10,
+        add_popup_menu   = true,
     },
     realm = {
         realm_sv_ver     = 1,
@@ -105,6 +107,22 @@ BeQuiet.consoleOptions = {
                 return BeQuiet:duration_to_seconds(v) > 0
             end,
         },
+        add_popup_menu = {
+            type = "toggle",
+            name = L["Add to Pop-up menu"],
+            desc = L["Add BeQuiet to right-click pop-up menu"],
+            get = function() return BeQuiet.db.profile.add_popup_menu end,
+            set = function()
+                if( BeQuiet.db.profile.add_popup_menu ) then
+                    BeQuiet:Print(L["removing BeQuiet from right-click popup menu"])
+                    BeQuiet:Remove_Popup_Hook()
+                else
+                    BeQuiet:Print(L["adding BeQuiet to right-click popup menu"])
+                    BeQuiet:Add_Popup_Hook()
+                end
+                BeQuiet.db.profile.add_popup_menu = not BeQuiet.db.profile.add_popup_menu
+            end,
+        },
         add = {
             type = "text",
             name = L["add"],
@@ -113,7 +131,6 @@ BeQuiet.consoleOptions = {
             input = true,
             get = false,
             set = function(name, v)
-                BeQuiet:Debug("%s - %s", name, v)
                 BeQuiet:add(BeQuiet:initcap(name), v, false)
             end,
         },
@@ -157,20 +174,28 @@ BeQuiet.consoleOptions = {
 }
 BeQuiet:RegisterChatCommand(L["AceConsole-Commands"], BeQuiet.consoleOptions )
 
--- function BeQuiet:OnInitialize()
+function BeQuiet:OnInitialize()
 
-    -- SV upgrades go here
-    
--- end
+    UnitPopupButtons["BEQUIET"] = {
+        text = TEXT(L["UNITPOPUP_BEQUIET"]),
+        dist = 0
+    }
+
+end
 
 function BeQuiet:OnEnable()
 
     self.event_id = nil
+    self.popup_hook_added = false
     
     self:UnregisterAllEvents()
     self:RegisterEvent("BeQuiet_Check")
     self:RegisterEvent("BeQuiet_Check_Add")
     self:RegisterEvent("BeQuiet_Check_Del")
+    
+    if( BeQuiet.db.profile.add_popup_menu ) then
+        self:Add_Popup_Hook()
+    end
     
 	if( AceLibrary("AceEvent-2.0"):IsFullyInitialized() ) then
 		self:AceEvent_FullyInitialized()
@@ -185,6 +210,9 @@ function BeQuiet:OnDisable()
     self:TriggerEvent("BeQuiet_Check")
     self.event_id = nil
     self:UnregisterAllEvents()
+    if( self.popup_hook_added ) then
+        self:Remove_Popup_Hook()
+    end
     
 end
 
@@ -198,6 +226,53 @@ function BeQuiet:AceEvent_FullyInitialized()
         return
     end
     self.event_id = self:ScheduleRepeatingEvent("BeQuiet_Check", seconds)
+
+end
+
+function BeQuiet:Add_Popup_Hook()
+
+    if( self.popup_hook_added ) then
+        self:Debug("tried to add when already active!")
+        return
+    end
+    local tables = { "FRIEND", "PARTY", "PLAYER", "RAID" }
+    for _, t in pairs(tables) do
+        tinsert(UnitPopupMenus[t], getn(UnitPopupMenus[t]), "BEQUIET")
+    end
+    self:SecureHook("UnitPopup_OnClick")
+    self.popup_hook_added = true
+
+end
+
+function BeQuiet:Remove_Popup_Hook()
+
+    if( not self.popup_hook_added ) then
+        self:Debug("tried to remove when not active!")
+        return
+    end
+    self:UnhookAll()
+    local tables = { "FRIEND", "PARTY", "PLAYER", "RAID" }
+    for _, t in pairs(tables) do
+        for i, v in ipairs(UnitPopupMenus[t]) do
+            self:Debug("v = " .. v)
+            if( v == "BEQUIET" ) then
+                tremove(UnitPopupMenus[t], i)
+                break
+            end
+        end
+    end
+    self.popup_hook_added = false
+
+end
+
+function BeQuiet:UnitPopup_OnClick()
+
+    local dropdownFrame = getglobal(UIDROPDOWNMENU_INIT_MENU)
+    local name = dropdownFrame.name
+    local button = this.value
+    if( button == "BEQUIET" ) then
+        self:add(name)
+    end
 
 end
 
@@ -226,6 +301,10 @@ end
 
 function BeQuiet:do_add(data)
 
+    if( data.name == UnitName("player") ) then
+        self:Print(L["making yourself BeQuiet is outside the scope of this addon"])
+        return
+    end
     data.attempts = data.attempts + 1
     if( BeQuiet.db.realm.list[data.name] ) then
         if( data.untiltime > BeQuiet.db.realm.list[data.name] ) then

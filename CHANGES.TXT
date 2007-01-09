@@ -6,3 +6,11 @@
 
 - initial public release after internal testing
 
+
+1.5 Jan 8th 2007
+
+- added BeQuiet option to right-click popup menu (toggleable)
+- added check if you try to add yourself to the list
+- added PlayerMenu as optional dependency (see BUGS.TXT)
+
+
