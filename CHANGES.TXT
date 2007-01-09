@@ -13,4 +13,10 @@
 - added check if you try to add yourself to the list
 - added PlayerMenu as optional dependency (see BUGS.TXT)
 
+1.6 Jan 9th 2007
+
+- update TOC to 20003 for compatibility with latest live WoW
+  version
+
+
 

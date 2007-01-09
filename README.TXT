@@ -28,7 +28,7 @@ At an interval defined by "checktime" (see below), BeQuiet will scan the BQ
 list for any entries which are expired.  Expired entries on the BQ list
 will be unignored.  Expired entries from the BQ queue will simply be
 removed.
-
+7
 BeQuiet will not attempt to add someone from the queue indefinately.  There
 is a configuration setting "max_add_attempts" that controls the maximum
 number of times that BQ will try to add someone, after which they will be
@@ -75,6 +75,11 @@ worked or not - you have to check the ignore list after a small delay.  This
 configuration setting is that delay.  If you are on a connection with very
 high latency, you may wish to increase this to 5s or even 10s to ensure that
 you aren't constantly adding entries to the queue for one cycle.
+
+add_popup_menu [true]
+
+toggles on/off adding "Be Quiet!" as an option to the popup menu that appears
+when you right click on a player name in chat, the friends pane, etc.
 
 Usage
 -----
