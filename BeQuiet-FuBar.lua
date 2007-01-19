@@ -53,7 +53,7 @@ BeQuiet.fubarOptions = {
                     type = "text",
                     name = L["Ignore Time"],
                     desc = L["set default ignore time"],
-                    usage = L["[#d#h#m#s]"],
+                    usage = L["[#M#w#d#h#m#s]"],
                     get = function()
                         return BeQuiet.db.profile.ignoretime
                     end,
@@ -69,7 +69,7 @@ BeQuiet.fubarOptions = {
                     type = "text",
                     name = L["Check Time"],
                     desc = L["set time in between checks for expired entries"],
-                    usage = L["[#d#h#m#s]"],
+                    usage = L["[#M#w#d#h#m#s]"],
                     get = function()
                         return BeQuiet.db.profile.checktime
                     end,
@@ -107,7 +107,7 @@ BeQuiet.fubarOptions = {
                     type = "text",
                     name = L["Add/Delete Delay"],
                     desc = L["set time to wait after adding or deleting to check if it worked"],
-                    usage = L["[#d#h#m#s]"],
+                    usage = L["[#M#w#d#h#m#s]"],
                     get = function()
                         return BeQuiet.db.profile.add_del_wait
                     end,
@@ -327,7 +327,7 @@ function BeQuiet:OnTooltipUpdate()
         if( duration > 0 ) then
             queue:AddLine(
                 'text', name,
-                'text2', date(L["dateformat"], expire),
+                'text2', date(L["dateformat"], v.untiltime),
                 'text3', A:FormatDurationFull(duration),
                 'text4', v.attempts,
                 'func', 'del',
@@ -337,7 +337,7 @@ function BeQuiet:OnTooltipUpdate()
         else
             queue:AddLine(
                 'text', name,
-                'text2',  date(L["dateformat"], expire),
+                'text2',  date(L["dateformat"], v.untiltime),
                 'text3', L["(expired)"],
                 'text4', v.attempts,
                 'func', 'del',

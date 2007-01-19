@@ -45,7 +45,7 @@ BeQuiet.consoleOptions = {
             type = "text",
             name = L["ignoretime"],
             desc = L["set default ignore time"],
-            usage = L["[#d#h#m#s]"],
+            usage = L["[#M#w#d#h#m#s]"],
             get = function()
                 return BeQuiet.db.profile.ignoretime
             end,
@@ -60,7 +60,7 @@ BeQuiet.consoleOptions = {
             type = "text",
             name = L["add_del_wait"],
             desc = L["set time to wait after adding or deleting to check if it worked"],
-            usage = L["[#d#h#m#s]"],
+            usage = L["[#M#w#d#h#m#s]"],
             get = function()
                 return BeQuiet.db.profile.add_del_wait
             end,
@@ -90,7 +90,7 @@ BeQuiet.consoleOptions = {
             type = "text",
             name = L["checktime"],
             desc = L["set time in between checks for expired entries"],
-            usage = L["[#d#h#m#s]"],
+            usage = L["[#M#w#d#h#m#s]"],
             get = function()
                 return BeQuiet.db.profile.checktime
             end,
@@ -127,7 +127,7 @@ BeQuiet.consoleOptions = {
             type = "text",
             name = L["add"],
             desc = L["add entry to BQ list"],
-            usage = L["<user> [#d#h#m#s]"],
+            usage = L["<user> [#M#w#d#h#m#s]"],
             input = true,
             get = false,
             set = function(name, v)
@@ -464,9 +464,13 @@ function BeQuiet:duration_to_seconds(duration)
 
     local seconds = 0
     self:Debug("duration = %s", duration)
-    for num, unit in string.gmatch(duration, "(%d+)([dhms])") do
+    for num, unit in string.gmatch(duration, "(%d+)([Mwdhms])") do
         self:Debug("found %d %s", num, unit)
-        if( unit == "d" ) then
+        if( unit == "M" ) then
+            seconds = seconds + (num*60*60*24*30)
+        elseif( unit == "w" ) then
+            seconds = seconds + (num*60*60*24*7)
+        elseif( unit == "d" ) then
             seconds = seconds + (num*60*60*24)
         elseif( unit == "h" ) then
             seconds = seconds + (num*60*60)

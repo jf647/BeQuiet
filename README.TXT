@@ -121,16 +121,21 @@ Durations
 
 The ignoretime, checktime, add_delay_wait and individual ignore times for
 new additions use a duration syntax consisting of one or more unit values.
-Units are d for days, h for hours, m for minutes and s for seconds.  Order
-does not matter, and unit types can be repeated.
+Internally, everything uses seconds.
+
+Units are M for months (30 days), w for weeks, d for days, h for hours, m
+for minutes and s for seconds. Order does not matter, and unit types can be
+repeated.
 
 Here are some example legal durations:
 
+  2w = 604800 seconds
   1h = 3600 seconds
   1d = 86400 seconds
   5m = 300 seconds
   1d1h1m1s = 90061 seconds
   1s5s10s6s = 22 seconds
+  1M1w = 3196800 seconds
 
 And here are some invalid durations:
 

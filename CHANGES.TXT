@@ -18,5 +18,8 @@
 - update TOC to 20003 for compatibility with latest live WoW
   version
 
+1.7 ???
 
+- added M (month/30 days) and w (week) units to valid durations
+- fixed display bug in FuBar tooltip for queued entries
 
