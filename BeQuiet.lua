@@ -1,5 +1,5 @@
 --
--- $Id$
+-- $Date$ $Revision$
 --
 
 -- get global library instances

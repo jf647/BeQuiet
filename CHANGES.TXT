@@ -1,5 +1,5 @@
 --
--- $Id$
+-- $Date$ $Revision$
 --
 
 1.4 - Jan 8th 2007

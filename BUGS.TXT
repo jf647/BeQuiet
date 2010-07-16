@@ -1,12 +1,4 @@
 --
--- $Id$
+-- $Date$ $Revision$
 --
-
-in 1.5:
-
-- had to set PlayerMenu as an optional dependency due to the way that addon
-  takes over the friends menu.  If I hook in after he's done his stuff,
-  we're fine, but if I hook first he overwrites my entries with the Blizzard
-  defaults
-  
 

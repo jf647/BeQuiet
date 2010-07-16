@@ -1,5 +1,5 @@
 --
--- $Id$
+-- $Date$ $Revision$
 --
 
 local L = AceLibrary("AceLocale-2.2"):new("BeQuiet")
